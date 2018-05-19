@@ -6,15 +6,12 @@ module ProspectusGems
   class Gemspec < Module
     @gem_version_cache = {}
 
-    def initialize(gemspec)
-      @gemspec = gemspec || Dir.glob('*.gemspec').first
-    end
-
     def extended(other) # rubocop:disable Metrics/MethodLength
+      gem_deps = parse_deps
       other.deps do
-        parse_deps.each do |dep_name, current, latest|
+        gem_deps.each do |dep_name, current, latest|
           item do
-            name dep_name
+            name 'gems::' + dep_name
 
             expected do
               static
@@ -35,7 +32,7 @@ module ProspectusGems
     def parse_deps
       bundler_deps.map do |x|
         latest = Gemspec.lookup_gem(x.name)
-        current = x.match?(x.name, latest) ? x.latest : x.requirements_list
+        current = x.match?(x.name, latest) ? latest : x.requirements_list
         [x.name, current, latest]
       end
     end
@@ -51,18 +48,18 @@ module ProspectusGems
     end
 
     class << self
-      def self.lookup_gem(name)
-        GEM_VERSION_CACHE[name] ||= fetch_gem(name)
+      def lookup_gem(name)
+        @gem_version_cache[name] ||= fetch_gem(name)
       end
 
-      def self.fetch_gem(name)
+      def fetch_gem(name)
         # rubocop:disable Security/Open
         body = open("#{versions_base_uri}/#{name}/latest.json").read
         # rubocop:enable Security/Open
         JSON.parse(body)['version']
       end
 
-      def self.versions_base_uri
+      def versions_base_uri
         @versions_base_uri ||= 'https://rubygems.org/api/v1/versions'
       end
     end
