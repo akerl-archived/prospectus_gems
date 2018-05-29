@@ -6,6 +6,11 @@ module ProspectusGems
   class Gemspec < Module
     @gem_version_cache = {}
 
+    def initialize(gemfile = nil, lockfile = nil)
+      @gemfile = gemfile
+      @lockfile = lockfile
+    end
+
     def extended(other) # rubocop:disable Metrics/MethodLength
       gem_deps = parse_deps
       other.deps do
@@ -44,7 +49,15 @@ module ProspectusGems
     end
 
     def bundle
-      @bundle ||= Bundler.load
+      @bundle ||= Bundler::Definition.build(gemfile, lockfile, nil)
+    end
+
+    def gemfile
+      @gemfile ||= Bundler::SharedHelpers.default_gemfile
+    end
+
+    def lockfile
+      @lockfile ||= Bundler::SharedHelpers.default_lockfile
     end
 
     class << self
