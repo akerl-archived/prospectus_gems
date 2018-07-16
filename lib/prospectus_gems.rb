@@ -43,6 +43,7 @@ module ProspectusGems
     end
 
     def runtime_deps
+      @runtime_deps ||= [] unless gemfile.read =~ /^gemspec$/
       @runtime_deps ||= bundle.resolve[dev_deps.first.name].first.dependencies
     end
 
