@@ -35,17 +35,19 @@ module ProspectusGems
     private
 
     def parse_deps
-      bundler_deps.map do |x|
+      (runtime_deps + dev_deps).map do |x|
         latest = Gemspec.lookup_gem(x.name)
         current = x.match?(x.name, latest) ? latest : x.requirements_list
         [x.name, current, latest]
       end
     end
 
-    def bundler_deps
-      @bundler_deps ||= bundle.dependencies.reject do |x|
-        x.requirements_list == ['>= 0']
-      end
+    def runtime_deps
+      @runtime_deps ||= bundle.resolve[dev_deps.first.name].first.dependencies
+    end
+
+    def dev_deps
+      @dev_deps ||= bundle.dependencies
     end
 
     def bundle
