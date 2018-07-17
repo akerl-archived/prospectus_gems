@@ -35,16 +35,30 @@ module ProspectusGems
     private
 
     def parse_deps
-      bundle.resolve_remotely! unless bundle.instance_variable_get(:@specs)
-      bundle.dependencies.map do |x|
+      dependencies.map do |x|
         latest = Gemspec.lookup_gem(x.name)
         current = x.match?(x.name, latest) ? latest : x.requirements_list
         [x.name, current, latest]
       end
     end
 
+    def dependencies
+      @dependencies ||= dep_obj.dependencies
+    end
+
+    def dep_obj
+      @dep_obj ||= if gemfile.read =~ /^gemspec$/
+                     bundle.specs[bundle.dependencies.first.name].first
+                   else
+                     bundle
+                   end
+    end
+
     def bundle
-      @bundle ||= Bundler::Definition.build(gemfile, lockfile, nil)
+      return @bundle if @bundle
+      @bundle = Bundler::Definition.build(gemfile, lockfile, nil)
+      @bundle.resolve_remotely!
+      @bundle
     end
 
     def gemfile
