@@ -1,4 +1,5 @@
 require 'bundler'
+require 'open-uri'
 
 module ProspectusGems
   ##
