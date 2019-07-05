@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'prospectus_gems'
-  s.version     = '0.3.0'
+  s.version     = '0.3.1'
   s.date        = Time.now.strftime('%Y-%m-%d')
 
   s.summary     = 'Prospectus helpers for gemspecs'
